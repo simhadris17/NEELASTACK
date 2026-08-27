@@ -12,8 +12,9 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy import select
 
 from packages.neelastack.core.config import settings
+from packages.neelastack.database.base import Base
 from packages.neelastack.database.models import Job
-from packages.neelastack.database.session import SessionLocal
+from packages.neelastack.database.session import SessionLocal, engine
 from packages.neelastack.security.audit import record_audit
 from packages.neelastack.workers.jobs import HANDLERS, mark_job, retry_job
 
@@ -82,6 +83,7 @@ def process_once() -> int:
 
 
 def main() -> None:
+    Base.metadata.create_all(engine)
     while True:
         processed = process_once()
         if not processed:

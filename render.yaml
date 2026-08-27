@@ -1,0 +1,45 @@
+databases:
+  - name: neelastack-db
+    databaseName: neelastack
+    user: neelastack
+
+services:
+  - type: web
+    name: neelastack-api
+    runtime: docker
+    dockerfilePath: ./infrastructure/docker/api.Dockerfile
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: neelastack-db
+          property: connectionString
+      - key: MODEL_PROVIDER
+        value: ollama
+      - key: PROVIDER_FALLBACKS
+        value: ollama
+      - key: CORS_ORIGINS
+        sync: false
+
+  - type: worker
+    name: neelastack-worker
+    runtime: docker
+    dockerfilePath: ./infrastructure/docker/worker.Dockerfile
+    plan: free
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: SECRET_KEY
+        fromService:
+          name: neelastack-api
+          type: web
+          envVarKey: SECRET_KEY
+      - key: DATABASE_URL
+        fromDatabase:
+          name: neelastack-db
+          property: connectionString
