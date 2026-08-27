@@ -9,4 +9,5 @@ jobs:
         with: {python-version: "3.12"}
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -e ".[dev]"
+      - run: alembic upgrade head
       - run: pytest -q
