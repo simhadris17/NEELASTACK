@@ -1,11 +1,64 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: neelastack
+      POSTGRES_USER: neelastack
+      POSTGRES_PASSWORD: neelastack-local
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U neelastack -d neelastack"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  ollama:
+    image: ollama/ollama:latest
+    volumes:
+      - ollama_data:/root/.ollama
+
   api:
     build:
       context: ../..
       dockerfile: infrastructure/docker/api.Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ollama:
+        condition: service_started
     environment:
-      DATABASE_URL: postgresql+psycopg://neelastack:neelastack@postgres:5432/neelastack
+      DATABASE_URL: postgresql+psycopg://neelastack:neelastack-local@postgres:5432/neelastack
       REDIS_URL: redis://redis:6379/0
       OLLAMA_BASE_URL: http://ollama:11434
       SECRET_KEY: change-this-in-local-development
-    ports: ['8000:8000']
+    ports:
+      - "8000:8000"
+
+  worker:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/worker.Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg://neelastack:neelastack-local@postgres:5432/neelastack
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: change-this-in-local-development
+
+volumes:
+  postgres_data:
+  ollama_data:
