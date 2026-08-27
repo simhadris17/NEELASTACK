@@ -1,0 +1,6 @@
+import {useState} from "react";
+export default function App(){
+ const [q,setQ]=useState(""); const [a,setA]=useState(""); const [loading,setLoading]=useState(false);
+ async function send(){if(!q.trim())return;setLoading(true);try{const r=await fetch("http://127.0.0.1:8000/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:q})});setA((await r.json()).answer||"No response")}catch{setA("Backend connection failed.")}finally{setLoading(false)}}
+ return <main style={{minHeight:"100vh",background:"#09090b",color:"white",padding:40,fontFamily:"Inter,system-ui"}}><h1>NEELASTACK</h1><p>AI Engineering Workspace</p><textarea value={q} onChange={e=>setQ(e.target.value)} placeholder="Ask NEELASTACK..." style={{width:"100%",minHeight:120}}/><br/><button onClick={send} disabled={loading}>{loading?"Thinking...":"Send"}</button><pre style={{whiteSpace:"pre-wrap"}}>{a}</pre></main>
+}

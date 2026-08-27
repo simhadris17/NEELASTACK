@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: neelastack-config
+data:
+  MODEL_PROVIDER: ollama
+  OLLAMA_BASE_URL: http://ollama:11434

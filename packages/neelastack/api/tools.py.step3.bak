@@ -1,0 +1,133 @@
+﻿from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from packages.neelastack.database.session import get_db
+from packages.neelastack.database.models import Tool
+from packages.neelastack.auth.dependencies import current_user
+
+router = APIRouter(prefix="/tools", tags=["tools"])
+
+
+@router.get("")
+def list_tools(
+    db: Session = Depends(get_db),
+    user=Depends(current_user),
+):
+    tools = db.scalars(
+        select(Tool)
+        .where(Tool.user_id == user.id)
+        .order_by(Tool.id.desc())
+    ).all()
+
+    return {
+        "tools": [
+            {
+                "id": tool.id,
+                "name": tool.name,
+                "enabled": tool.enabled,
+                "created_at": tool.created_at,
+            }
+            for tool in tools
+        ]
+    }
+
+
+@router.post("")
+def create_tool(
+    data: dict,
+    db: Session = Depends(get_db),
+    user=Depends(current_user),
+):
+    name = data.get("name")
+
+    if not name or not name.strip():
+        raise HTTPException(
+            status_code=422,
+            detail="Tool name is required",
+        )
+
+    existing = db.scalar(
+        select(Tool).where(
+            Tool.name == name.strip(),
+            Tool.user_id == user.id,
+        )
+    )
+
+    if existing:
+        raise HTTPException(
+            status_code=409,
+            detail="Tool already exists",
+        )
+
+    tool = Tool(
+        user_id=user.id,
+        name=name.strip(),
+        enabled=data.get("enabled", True),
+    )
+
+    db.add(tool)
+    db.commit()
+    db.refresh(tool)
+
+    return {
+        "id": tool.id,
+        "name": tool.name,
+        "enabled": tool.enabled,
+        "created_at": tool.created_at,
+    }
+
+
+@router.get("/{tool_id}")
+def get_tool(
+    tool_id: int,
+    db: Session = Depends(get_db),
+    user=Depends(current_user),
+):
+    tool = db.scalar(
+        select(Tool).where(
+            Tool.id == tool_id,
+            Tool.user_id == user.id,
+        )
+    )
+
+    if not tool:
+        raise HTTPException(
+            status_code=404,
+            detail="Tool not found",
+        )
+
+    return {
+        "id": tool.id,
+        "name": tool.name,
+        "enabled": tool.enabled,
+        "created_at": tool.created_at,
+    }
+
+
+@router.delete("/{tool_id}")
+def delete_tool(
+    tool_id: int,
+    db: Session = Depends(get_db),
+    user=Depends(current_user),
+):
+    tool = db.scalar(
+        select(Tool).where(
+            Tool.id == tool_id,
+            Tool.user_id == user.id,
+        )
+    )
+
+    if not tool:
+        raise HTTPException(
+            status_code=404,
+            detail="Tool not found",
+        )
+
+    db.delete(tool)
+    db.commit()
+
+    return {
+        "deleted": True,
+        "tool_id": tool_id,
+    }

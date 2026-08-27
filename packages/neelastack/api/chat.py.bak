@@ -1,0 +1,17 @@
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from packages.neelastack.database.session import get_db
+from packages.neelastack.database.models import Conversation, Message
+from packages.neelastack.models.requests import ChatRequest
+from packages.neelastack.providers.router import get_provider
+from packages.neelastack.auth.dependencies import current_user
+router=APIRouter(prefix="/chat",tags=["chat"])
+@router.post("")
+async def chat(data:ChatRequest, db:Session=Depends(get_db), user=Depends(current_user)):
+    conv=db.get(Conversation,data.conversation_id) if data.conversation_id else None
+    if conv is None:
+        conv=Conversation(user_id=user.id,title=data.message[:50]); db.add(conv); db.commit(); db.refresh(conv)
+    msg=Message(conversation_id=conv.id,role="user",content=data.message); db.add(msg); db.commit()
+    answer=await get_provider().generate(data.message)
+    db.add(Message(conversation_id=conv.id,role="assistant",content=answer)); db.commit()
+    return {"conversation_id":conv.id,"answer":answer}

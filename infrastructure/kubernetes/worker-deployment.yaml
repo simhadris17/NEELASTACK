@@ -1,0 +1,14 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: neelastack-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: neelastack-worker}
+  template:
+    metadata: {labels: {app: neelastack-worker}}
+    spec:
+      containers:
+      - name: worker
+        image: neelastack/worker:latest

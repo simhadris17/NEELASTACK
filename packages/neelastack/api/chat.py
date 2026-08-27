@@ -1,0 +1,65 @@
+﻿from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from sqlalchemy import select
+
+from packages.neelastack.database.session import get_db
+from packages.neelastack.database.models import Conversation, Message
+from packages.neelastack.models.requests import ChatRequest
+from packages.neelastack.providers.router import get_provider
+from packages.neelastack.auth.dependencies import current_user
+
+router = APIRouter(prefix="/api/v1/chat", tags=["chat"])
+
+
+@router.post("")
+async def chat(
+    data: ChatRequest,
+    db: Session = Depends(get_db),
+    user=Depends(current_user),
+):
+    if data.conversation_id:
+        conv = db.scalar(
+            select(Conversation).where(
+                Conversation.id == data.conversation_id,
+                Conversation.user_id == user.id,
+            )
+        )
+
+        if conv is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Conversation not found",
+            )
+    else:
+        conv = Conversation(
+            user_id=user.id,
+            title=data.message[:50],
+        )
+        db.add(conv)
+        db.commit()
+        db.refresh(conv)
+
+    db.add(
+        Message(
+            conversation_id=conv.id,
+            role="user",
+            content=data.message,
+        )
+    )
+    db.commit()
+
+    answer = await get_provider().generate(data.message)
+
+    db.add(
+        Message(
+            conversation_id=conv.id,
+            role="assistant",
+            content=answer,
+        )
+    )
+    db.commit()
+
+    return {
+        "conversation_id": conv.id,
+        "answer": answer,
+    }

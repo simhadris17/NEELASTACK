@@ -1,0 +1,121 @@
+﻿from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from packages.neelastack.database.session import get_db
+from packages.neelastack.database.models import Workflow
+from packages.neelastack.auth.dependencies import current_user
+
+router = APIRouter(prefix="/workflows", tags=["workflows"])
+
+
+@router.get("")
+def list_workflows(
+    db: Session = Depends(get_db),
+    user=Depends(current_user),
+):
+    workflows = db.scalars(
+        select(Workflow)
+        .where(Workflow.user_id == user.id)
+        .order_by(Workflow.id.desc())
+    ).all()
+
+    return {
+        "workflows": [
+            {
+                "id": workflow.id,
+                "name": workflow.name,
+                "definition_json": workflow.definition_json,
+                "created_at": workflow.created_at,
+            }
+            for workflow in workflows
+        ]
+    }
+
+
+@router.post("")
+def create_workflow(
+    data: dict,
+    db: Session = Depends(get_db),
+    user=Depends(current_user),
+):
+    name = data.get("name")
+    definition_json = data.get("definition_json", "{}")
+
+    if not name or not name.strip():
+        raise HTTPException(
+            status_code=422,
+            detail="Workflow name is required",
+        )
+
+    workflow = Workflow(
+        user_id=user.id,
+        name=name.strip(),
+        definition_json=definition_json,
+    )
+
+    db.add(workflow)
+    db.commit()
+    db.refresh(workflow)
+
+    return {
+        "id": workflow.id,
+        "name": workflow.name,
+        "definition_json": workflow.definition_json,
+        "created_at": workflow.created_at,
+    }
+
+
+@router.get("/{workflow_id}")
+def get_workflow(
+    workflow_id: int,
+    db: Session = Depends(get_db),
+    user=Depends(current_user),
+):
+    workflow = db.scalar(
+        select(Workflow).where(
+            Workflow.id == workflow_id,
+            Workflow.user_id == user.id,
+        )
+    )
+
+    if not workflow:
+        raise HTTPException(
+            status_code=404,
+            detail="Workflow not found",
+        )
+
+    return {
+        "id": workflow.id,
+        "name": workflow.name,
+        "definition_json": workflow.definition_json,
+        "created_at": workflow.created_at,
+    }
+
+
+@router.delete("/{workflow_id}")
+def delete_workflow(
+    workflow_id: int,
+    db: Session = Depends(get_db),
+    user=Depends(current_user),
+):
+    workflow = db.scalar(
+        select(Workflow).where(
+            Workflow.id == workflow_id,
+            Workflow.user_id == user.id,
+        )
+    )
+
+    if not workflow:
+        raise HTTPException(
+            status_code=404,
+            detail="Workflow not found",
+        )
+
+    db.delete(workflow)
+    db.commit()
+
+    return {
+        "deleted": True,
+        "workflow_id": workflow_id,
+    }

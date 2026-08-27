@@ -1,0 +1,6 @@
+services:
+  api:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/api.Dockerfile
+    ports: ['8000:8000']

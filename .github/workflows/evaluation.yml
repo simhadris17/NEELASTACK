@@ -1,0 +1,8 @@
+name: Evaluation
+on: [push]
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - run: python -m pytest packages/neelastack/evaluations -q
