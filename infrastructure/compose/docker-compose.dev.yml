@@ -41,6 +41,10 @@ services:
       DATABASE_URL: postgresql+psycopg://neelastack:neelastack-local@postgres:5432/neelastack
       REDIS_URL: redis://redis:6379/0
       OLLAMA_BASE_URL: http://ollama:11434
+      MODEL_PROVIDER: ${MODEL_PROVIDER:-ollama}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      PROVIDER_FALLBACKS: ${PROVIDER_FALLBACKS:-openai,ollama}
       SECRET_KEY: change-this-in-local-development
     ports:
       - "8000:8000"
@@ -64,6 +68,7 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg://neelastack:neelastack-local@postgres:5432/neelastack
       REDIS_URL: redis://redis:6379/0
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       SECRET_KEY: change-this-in-local-development
 
 volumes:
