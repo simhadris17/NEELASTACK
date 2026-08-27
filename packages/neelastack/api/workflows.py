@@ -12,6 +12,7 @@ from packages.neelastack.workflows.executor import (
     WorkflowExecutor,
     WorkflowExecutionError,
 )
+from packages.neelastack.security.audit import record_audit
 
 router = APIRouter(prefix="/workflows", tags=["workflows"])
 
@@ -100,7 +101,37 @@ def create_workflow(
     return _workflow_response(workflow)
 
 
-@router.get("/{workflow_id}")
+@router.put("/{workflow_id}")
+def update_workflow(
+    workflow_id: int,
+    data: dict,
+    db: Session = Depends(get_db),
+    user=Depends(current_user),
+):
+    workflow = db.scalar(
+        select(Workflow).where(Workflow.id == workflow_id, Workflow.user_id == user.id)
+    )
+    if workflow is None:
+        raise HTTPException(status_code=404, detail="Workflow not found")
+    name = data.get("name", workflow.name)
+    definition_json = data.get("definition_json", workflow.definition_json)
+    if not isinstance(name, str) or not name.strip():
+        raise HTTPException(status_code=422, detail="Workflow name is required")
+    if not isinstance(definition_json, str):
+        raise HTTPException(status_code=422, detail="definition_json must be a JSON string")
+    try:
+        json.loads(definition_json)
+    except json.JSONDecodeError as exc:
+        raise HTTPException(status_code=422, detail="definition_json must contain valid JSON") from exc
+    workflow.name = name.strip()
+    workflow.definition_json = definition_json
+    record_audit(db, "workflow.updated", user.id, "workflow", workflow.id)
+    db.commit()
+    db.refresh(workflow)
+    return _workflow_response(workflow)
+
+
+@router.get("/{workflow_id:int}")
 def get_workflow(
     workflow_id: int,
     db: Session = Depends(get_db),
@@ -178,6 +209,7 @@ async def run_workflow(
     )
 
     db.add(run)
+    record_audit(db, "workflow.run.created", user.id, "workflow_run", run.id)
     db.commit()
     db.refresh(run)
 
@@ -219,17 +251,17 @@ async def run_workflow(
     except Exception as exc:
         db.rollback()
 
-        run = db.scalar(
+        failed_run = db.scalar(
             select(WorkflowRun).where(
                 WorkflowRun.id == run.id,
                 WorkflowRun.user_id == user.id,
             )
         )
 
-        if run:
-            run.status = "failed"
-            run.error = str(exc)
-            run.completed_at = datetime.now(timezone.utc)
+        if failed_run:
+            failed_run.status = "failed"
+            failed_run.error = str(exc)
+            failed_run.completed_at = datetime.now(timezone.utc)
             db.commit()
 
         raise HTTPException(
@@ -274,7 +306,19 @@ def list_workflow_runs(
     }
 
 
-@router.delete("/{workflow_id}")
+@router.get("/runs/{run_id}")
+def get_workflow_run(
+    run_id: int,
+    db: Session = Depends(get_db),
+    user=Depends(current_user),
+):
+    run = db.scalar(select(WorkflowRun).where(WorkflowRun.id == run_id, WorkflowRun.user_id == user.id))
+    if run is None:
+        raise HTTPException(status_code=404, detail="Workflow run not found")
+    return _run_response(run)
+
+
+@router.delete("/{workflow_id:int}")
 def delete_workflow(
     workflow_id: int,
     db: Session = Depends(get_db),
@@ -293,7 +337,21 @@ def delete_workflow(
             detail="Workflow not found",
         )
 
+    runs = db.scalars(
+        select(WorkflowRun).where(
+            WorkflowRun.workflow_id == workflow_id,
+            WorkflowRun.user_id == user.id,
+        )
+    ).all()
+
+    for run in runs:
+        db.delete(run)
+
+    # Flush child workflow_runs DELETEs before deleting parent workflow.
+    db.flush()
+
     db.delete(workflow)
+    record_audit(db, "workflow.deleted", user.id, "workflow", workflow_id)
     db.commit()
 
     return {

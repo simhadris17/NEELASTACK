@@ -5,3 +5,7 @@ metadata:
 data:
   MODEL_PROVIDER: ollama
   OLLAMA_BASE_URL: http://ollama:11434
+  PROVIDER_FALLBACKS: ollama,openai,groq
+  STT_PROVIDER: local
+  TTS_PROVIDER: local
+  WORKER_POLL_SECONDS: "1"

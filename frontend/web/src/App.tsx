@@ -1,172 +1,119 @@
-import { useState } from "react";
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+} from "react-router-dom";
 
-const API = "http://127.0.0.1:8000";
+import MainLayout from "./layouts/MainLayout";
+import Projects from "./pages/Projects";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import Register from "./pages/Register";
+import Chat from "./pages/Chat";
+import ApiWorkspace from "./pages/ApiWorkspace";
+import Agents from "./pages/Agents";
+import WorkspacePage from "./components/WorkspacePage";
+import Files from "./pages/Files";
+import Workflows from "./pages/Workflows";
+import MCP from "./pages/MCP";
+import Evaluations from "./pages/Evaluations";
+import Observability from "./pages/Observability";
+import Security from "./pages/Security";
+import Settings from "./pages/Settings";
 
-export default function App() {
-  const [email, setEmail] = useState("test@example.com");
-  const [password, setPassword] = useState("Test@123456");
-  const [token, setToken] = useState("");
-  const [user, setUser] = useState("");
-  const [q, setQ] = useState("");
-  const [a, setA] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState("");
-
-  async function login() {
-    setStatus("Logging in...");
-    try {
-      const r = await fetch(`${API}/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await r.json();
-
-      if (!r.ok) {
-        setStatus(data.detail || "Login failed");
-        return;
-      }
-
-      setToken(data.access_token);
-      localStorage.setItem("neelastack_token", data.access_token);
-
-      const me = await fetch(`${API}/auth/me`, {
-        headers: {
-          Authorization: `Bearer ${data.access_token}`,
-        },
-      });
-
-      const meData = await me.json();
-
-      if (me.ok) {
-        setUser(meData.email);
-        setStatus("Login successful");
-      } else {
-        setStatus("Login successful, but /auth/me failed");
-      }
-    } catch {
-      setStatus("Backend connection failed");
-    }
-  }
-
-  async function send() {
-    if (!q.trim()) return;
-
-    let activeToken = token || localStorage.getItem("neelastack_token");
-
-    if (!activeToken) {
-      setStatus("Please login first");
-      return;
-    }
-
-    setLoading(true);
-    setA("");
-
-    try {
-      const r = await fetch(`${API}/chat`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${activeToken}`,
-        },
-        body: JSON.stringify({
-          message: q,
-        }),
-      });
-
-      const data = await r.json();
-
-      if (!r.ok) {
-        setA(data.detail || "Chat request failed");
-        return;
-      }
-
-      setA(data.answer || "No response");
-      setStatus(`Chat successful — conversation ${data.conversation_id}`);
-    } catch {
-      setA("Backend connection failed.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
+function PlannedWorkspace({
+  title,
+  description,
+}: {
+  title: string;
+  description: string;
+}) {
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        background: "#09090b",
-        color: "white",
-        padding: 40,
-        fontFamily: "Inter, system-ui",
-      }}
+    <WorkspacePage
+      title={title}
+      description={description}
+      connected={false}
     >
-      <h1>NEELASTACK</h1>
-      <p>AI Engineering Workspace</p>
+      <section className="workspace-card">
+        <div className="card-heading">
+          <div>
+            <p className="card-kicker">MODULE</p>
+            <h2>{title} workspace</h2>
+          </div>
 
-      <section style={{ maxWidth: 600 }}>
-        <h2>Login</h2>
+          <span className="project-status">PLANNED</span>
+        </div>
 
-        <input
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email"
-          style={{ width: "100%", padding: 10, marginBottom: 10 }}
-        />
-
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Password"
-          style={{ width: "100%", padding: 10, marginBottom: 10 }}
-        />
-
-        <button onClick={login}>
-          Login
-        </button>
-
-        <p>{status}</p>
-
-        {user && (
-          <p>
-            Logged in as: <strong>{user}</strong>
-          </p>
-        )}
-
-        <hr />
-
-        <h2>Chat</h2>
-
-        <textarea
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Ask NEELASTACK..."
-          style={{
-            width: "100%",
-            minHeight: 120,
-            padding: 10,
-            marginBottom: 10,
-          }}
-        />
-
-        <br />
-
-        <button onClick={send} disabled={loading || !token}>
-          {loading ? "Thinking..." : "Send"}
-        </button>
-
-        <pre
-          style={{
-            whiteSpace: "pre-wrap",
-            marginTop: 20,
-          }}
-        >
-          {a}
-        </pre>
+        <p className="card-description">
+          The active project workspace is ready. The backend API for this
+          module has not been exposed yet.
+        </p>
       </section>
-    </main>
+    </WorkspacePage>
   );
 }
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+
+        <Route element={<ProtectedRoute />}>
+          <Route element={<MainLayout />}>
+            <Route path="/" element={<Dashboard />} />
+
+            <Route path="/chat" element={<Chat />} />
+
+            <Route path="/projects" element={<Projects />} />
+
+            <Route
+              path="/agents"
+              element={
+                <Agents />
+              }
+            />
+
+            <Route
+              path="/workflows"
+              element={<Workflows />}
+            />
+
+            <Route
+              path="/files"
+              element={<Files />}
+            />
+
+            <Route
+              path="/mcp"
+              element={<MCP />}
+            />
+
+            <Route
+              path="/evaluations"
+              element={<Evaluations />}
+            />
+
+            <Route
+              path="/observability"
+              element={<Observability />}
+            />
+
+            <Route
+              path="/security"
+              element={<Security />}
+            />
+            <Route path="/settings" element={<Settings />} />
+
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Route>
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+export default App;

@@ -1,1 +1,3 @@
-export default function Component(){return <div/>}
+﻿export default function Sidebar() {
+  return null;
+}

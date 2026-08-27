@@ -17,6 +17,7 @@ from packages.neelastack.database.models import (
     Tool,
     Memory,
     AuditEvent,
+    Job,
 )
 
 config = context.config

@@ -3,4 +3,9 @@ services:
     build:
       context: ../..
       dockerfile: infrastructure/docker/api.Dockerfile
+    environment:
+      DATABASE_URL: postgresql+psycopg://neelastack:neelastack@postgres:5432/neelastack
+      REDIS_URL: redis://redis:6379/0
+      OLLAMA_BASE_URL: http://ollama:11434
+      SECRET_KEY: change-this-in-local-development
     ports: ['8000:8000']

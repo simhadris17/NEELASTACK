@@ -1,9 +1,66 @@
 name: Deploy
+
 on:
   workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Immutable image tag (defaults to commit SHA)"
+        required: false
+        type: string
+      namespace:
+        description: "Kubernetes namespace"
+        required: false
+        default: neelastack
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: production
     steps:
-    - uses: actions/checkout@v4
-    - run: echo 'Build and deploy using your registry/cluster credentials'
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build immutable images
+        env:
+          REGISTRY: ghcr.io/${{ github.repository_owner }}/neelastack
+          TAG: ${{ inputs.image_tag || github.sha }}
+        run: |
+          docker build -f infrastructure/docker/api.Dockerfile -t "$REGISTRY-api:$TAG" .
+          docker build -f infrastructure/docker/worker.Dockerfile -t "$REGISTRY-worker:$TAG" .
+          docker push "$REGISTRY-api:$TAG"
+          docker push "$REGISTRY-worker:$TAG"
+      - name: Configure kubectl
+        uses: azure/k8s-set-context@v4
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+      - name: Apply manifests and migrate
+        env:
+          NS: ${{ inputs.namespace || 'neelastack' }}
+        run: |
+          kubectl apply -f infrastructure/kubernetes/namespace.yaml
+          for manifest in infrastructure/kubernetes/*.yaml; do
+            name="$(basename "$manifest")"
+            [ "$name" = "secret.yaml" ] || [ "$name" = "namespace.yaml" ] || kubectl apply -f "$manifest" -n "$NS"
+          done
+          kubectl -n "$NS" get secret neelastack-secret >/dev/null
+          kubectl -n "$NS" set image deployment/neelastack-api api=ghcr.io/${{ github.repository_owner }}/neelastack-api:${{ inputs.image_tag || github.sha }}
+          kubectl -n "$NS" set image deployment/neelastack-worker worker=ghcr.io/${{ github.repository_owner }}/neelastack-worker:${{ inputs.image_tag || github.sha }}
+          kubectl -n "$NS" rollout status deployment/neelastack-api --timeout=5m
+          kubectl -n "$NS" rollout status deployment/neelastack-worker --timeout=5m
+      - name: Roll back failed rollout
+        if: failure()
+        env:
+          NS: ${{ inputs.namespace || 'neelastack' }}
+        run: |
+          kubectl -n "$NS" rollout undo deployment/neelastack-api || true
+          kubectl -n "$NS" rollout undo deployment/neelastack-worker || true
+          kubectl -n "$NS" rollout status deployment/neelastack-api --timeout=5m || true

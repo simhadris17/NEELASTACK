@@ -1,27 +1,42 @@
-﻿[project]
+
+[project]
 name = "neelastack"
 version = "0.1.0"
-requires-python = ">=3.12"
+description = "Local-first AI platform"
+requires-python = ">=3.11"
 dependencies = [
-  "fastapi>=0.115",
-  "uvicorn[standard]>=0.34",
-  "pydantic>=2.10",
-  "pydantic-settings>=2.7",
-  "sqlalchemy>=2.0",
-  "psycopg[binary]>=3.2",
-  "alembic>=1.14",
-  "python-jose[cryptography]>=3.3",
-  "passlib[bcrypt]>=1.7",
-  "httpx>=0.28",
-  "redis>=5.2",
-  "python-multipart>=0.0.20"
+    "fastapi",
+    "uvicorn[standard]",
+    "sqlalchemy",
+    "alembic",
+    "psycopg[binary]",
+    "redis",
+    "httpx",
+    "pydantic",
+    "pydantic-settings",
+    "argon2-cffi",
+    "python-jose",
+    "email-validator",
+    "python-multipart",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "pytest-asyncio>=0.25", "ruff>=0.9", "mypy>=1.14"]
+dev = [
+    "pytest>=8",
+    "pytest-asyncio>=0.25",
+    "ruff>=0.9",
+    "mypy>=1.14",
+]
+
+[tool.setuptools]
+packages = []
 
 [tool.ruff]
 line-length = 100
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
+
+[tool.mypy]
+explicit_package_bases = true
+ignore_missing_imports = true

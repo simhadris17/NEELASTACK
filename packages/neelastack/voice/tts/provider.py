@@ -1,3 +1,5 @@
-from .base import TTSProvider
-class LocalTTS(TTSProvider):
-    async def synthesize(self,text): raise NotImplementedError('Connect a local TTS engine')
+"""Compatibility exports for the server-side TTS adapters."""
+
+from .adapters import LocalTTS, OpenAITTS
+
+__all__ = ["LocalTTS", "OpenAITTS"]

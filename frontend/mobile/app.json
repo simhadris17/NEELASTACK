@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "NEELASTACK",
+    "slug": "neelastack",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "neelastack",
+    "ios": { "supportsTablet": true },
+    "android": { "adaptiveIcon": { "backgroundColor": "#f8fafc" } }
+  }
+}

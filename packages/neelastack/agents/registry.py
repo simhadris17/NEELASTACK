@@ -1,7 +1,17 @@
+from .analyst import AnalystAgent
+from .coder import CoderAgent
+from .executor import ExecutorAgent
 from .planner import PlannerAgent
 from .researcher import ResearcherAgent
-from .coder import CoderAgent
-from .analyst import AnalystAgent
 from .reviewer import ReviewerAgent
-from .executor import ExecutorAgent
-AGENTS = {a.name: a() for a in [PlannerAgent, ResearcherAgent, CoderAgent, AnalystAgent, ReviewerAgent, ExecutorAgent]}
+
+_AGENT_TYPES = (
+    PlannerAgent,
+    ResearcherAgent,
+    CoderAgent,
+    AnalystAgent,
+    ReviewerAgent,
+    ExecutorAgent,
+)
+
+AGENTS = {agent_type.name: agent_type() for agent_type in _AGENT_TYPES}

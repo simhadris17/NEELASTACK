@@ -1,4 +1,5 @@
 ﻿from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -69,6 +70,26 @@ def create_agent(
     }
 
 
+@router.post("/run")
+async def run_agent(
+    data: AgentRunRequest,
+    user=Depends(current_user),
+):
+    return await AgentRuntime().run(data.goal, data.history)
+
+
+@router.post("/run/stream")
+async def stream_agent(
+    data: AgentRunRequest,
+    user=Depends(current_user),
+):
+    return StreamingResponse(
+        AgentRuntime().stream(data.goal, data.history),
+        media_type="text/plain; charset=utf-8",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
 @router.get("/{agent_id}")
 def get_agent(
     agent_id: int,
@@ -122,11 +143,3 @@ def delete_agent(
         "deleted": True,
         "agent_id": agent_id,
     }
-
-
-@router.post("/run")
-async def run_agent(
-    data: AgentRunRequest,
-    user=Depends(current_user),
-):
-    return await AgentRuntime().run(data.goal)

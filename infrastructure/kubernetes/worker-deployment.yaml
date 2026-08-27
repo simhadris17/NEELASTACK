@@ -4,6 +4,8 @@ metadata:
   name: neelastack-worker
 spec:
   replicas: 1
+  strategy:
+    type: RollingUpdate
   selector:
     matchLabels: {app: neelastack-worker}
   template:
@@ -12,3 +14,13 @@ spec:
       containers:
       - name: worker
         image: neelastack/worker:latest
+        envFrom:
+        - configMapRef: {name: neelastack-config}
+        - secretRef: {name: neelastack-secret}
+        resources:
+          requests: {cpu: 100m, memory: 256Mi}
+          limits: {cpu: "1", memory: 1Gi}
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          capabilities: {drop: ["ALL"]}
