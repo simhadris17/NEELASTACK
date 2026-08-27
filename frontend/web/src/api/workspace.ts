@@ -1,8 +1,12 @@
+const configuredApiUrl = import.meta.env.VITE_API_URL as string | undefined;
+const isDeployedHost =
+  typeof window !== "undefined" &&
+  window.location.hostname === "neelastack.vercel.app";
 const API_BASE =
-  import.meta.env.VITE_API_URL ||
-  (typeof window !== "undefined" && window.location.hostname === "neelastack.vercel.app"
+  isDeployedHost &&
+  (!configuredApiUrl || configuredApiUrl.includes("127.0.0.1") || configuredApiUrl.includes("localhost"))
     ? "https://neelastack.onrender.com"
-    : "http://127.0.0.1:8000");
+    : configuredApiUrl || "http://127.0.0.1:8000";
 
 export function getToken(): string {
   return localStorage.getItem("neelastack_token") || "";
