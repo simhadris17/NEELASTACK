@@ -9,5 +9,5 @@ jobs:
         with: {python-version: "3.12"}
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -e ".[dev]"
-      - run: alembic upgrade head
+      - run: python -c "from packages.neelastack.database.base import Base; from packages.neelastack.database.session import engine; import packages.neelastack.database.models; Base.metadata.create_all(engine)"
       - run: pytest -q
