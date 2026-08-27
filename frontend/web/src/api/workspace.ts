@@ -1,4 +1,8 @@
-const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+const API_BASE =
+  import.meta.env.VITE_API_URL ||
+  (typeof window !== "undefined" && window.location.hostname === "neelastack.vercel.app"
+    ? "https://neelastack.onrender.com"
+    : "http://127.0.0.1:8000");
 
 export function getToken(): string {
   return localStorage.getItem("neelastack_token") || "";
