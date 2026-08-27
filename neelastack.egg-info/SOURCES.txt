@@ -1,0 +1,7 @@
+README.md
+pyproject.toml
+neelastack.egg-info/PKG-INFO
+neelastack.egg-info/SOURCES.txt
+neelastack.egg-info/dependency_links.txt
+neelastack.egg-info/requires.txt
+neelastack.egg-info/top_level.txt

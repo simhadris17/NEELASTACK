@@ -1,0 +1,136 @@
+﻿import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import MainLayout from "./layouts/MainLayout";
+
+function PlaceholderPage({ title, description }: { title: string; description: string }) {
+  return (
+    <section className="page-shell">
+      <div className="page-header">
+        <div>
+          <p className="eyebrow">NEELASTACK</p>
+          <h1>{title}</h1>
+          <p className="page-description">{description}</p>
+        </div>
+      </div>
+
+      <div className="placeholder-card">
+        <div className="placeholder-icon">✦</div>
+        <h2>{title} workspace</h2>
+        <p>This workspace is being connected to the NEELASTACK backend.</p>
+      </div>
+    </section>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route element={<MainLayout />}>
+          <Route
+            path="/"
+            element={
+              <PlaceholderPage
+                title="Dashboard"
+                description="Your AI engineering workspace at a glance."
+              />
+            }
+          />
+
+          <Route
+            path="/chat"
+            element={
+              <PlaceholderPage
+                title="Chat"
+                description="Talk to NEELASTACK and work with your AI agents."
+              />
+            }
+          />
+
+          <Route
+            path="/projects"
+            element={
+              <PlaceholderPage
+                title="Projects"
+                description="Organize agents, workflows, files and memory by project."
+              />
+            }
+          />
+
+          <Route
+            path="/agents"
+            element={
+              <PlaceholderPage
+                title="Agents"
+                description="Manage your planner, specialist and reviewer agents."
+              />
+            }
+          />
+
+          <Route
+            path="/workflows"
+            element={
+              <PlaceholderPage
+                title="Workflows"
+                description="Build and monitor multi-step AI workflows."
+              />
+            }
+          />
+
+          <Route
+            path="/files"
+            element={
+              <PlaceholderPage
+                title="Files"
+                description="Manage documents and knowledge sources."
+              />
+            }
+          />
+
+          <Route
+            path="/mcp"
+            element={
+              <PlaceholderPage
+                title="MCP"
+                description="Connect and control MCP tools and integrations."
+              />
+            }
+          />
+
+          <Route
+            path="/evaluations"
+            element={
+              <PlaceholderPage
+                title="Evaluations"
+                description="Inspect quality, safety, latency and cost evaluations."
+              />
+            }
+          />
+
+          <Route
+            path="/observability"
+            element={
+              <PlaceholderPage
+                title="Observability"
+                description="Monitor system health, traces, metrics and activity."
+              />
+            }
+          />
+
+          <Route
+            path="/security"
+            element={
+              <PlaceholderPage
+                title="Security"
+                description="Review permissions, security controls and audit activity."
+              />
+            }
+          />
+
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+export default App;

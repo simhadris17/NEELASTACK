@@ -1,0 +1,23 @@
+Metadata-Version: 2.4
+Name: neelastack
+Version: 0.1.0
+Summary: Local-first AI platform
+Requires-Python: >=3.11
+Requires-Dist: fastapi
+Requires-Dist: uvicorn[standard]
+Requires-Dist: sqlalchemy
+Requires-Dist: alembic
+Requires-Dist: psycopg[binary]
+Requires-Dist: redis
+Requires-Dist: httpx
+Requires-Dist: pydantic
+Requires-Dist: pydantic-settings
+Requires-Dist: argon2-cffi
+Requires-Dist: python-jose
+Requires-Dist: email-validator
+Requires-Dist: python-multipart
+Provides-Extra: dev
+Requires-Dist: pytest>=8; extra == "dev"
+Requires-Dist: pytest-asyncio>=0.25; extra == "dev"
+Requires-Dist: ruff>=0.9; extra == "dev"
+Requires-Dist: mypy>=1.14; extra == "dev"
