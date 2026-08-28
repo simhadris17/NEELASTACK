@@ -27,7 +27,8 @@ class Settings(BaseSettings):
     rate_limit_use_redis: bool = True
     cors_origins: str = (
         "http://localhost:3000,http://localhost:5173,http://localhost:5174,"
-        "http://127.0.0.1:3000,http://127.0.0.1:5173,http://127.0.0.1:5174"
+        "http://127.0.0.1:3000,http://127.0.0.1:5173,http://127.0.0.1:5174,"
+        "https://neelastack.vercel.app"
     )
     max_request_body_bytes: int = 10 * 1024 * 1024
     security_headers_enabled: bool = True
