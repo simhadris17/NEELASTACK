@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     secret_key: str = "change-me"
     database_url: str = "sqlite:///./neelastack.db"
     redis_url: str = "redis://localhost:6379/0"
-    model_provider: str = "ollama"
+    model_provider: str = "openai"
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "llama3.2"
     ollama_timeout_seconds: float = 600
@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     groq_api_key: str | None = None
     groq_base_url: str = "https://api.groq.com/openai/v1"
     groq_model: str = "llama-3.1-8b-instant"
-    provider_fallbacks: str = "ollama,openai,groq"
+    provider_fallbacks: str = "openai,groq,ollama"
     provider_timeout_seconds: float = 120
     provider_max_retries: int = 2
     jwt_expire_minutes: int = 720
@@ -73,3 +73,4 @@ class Settings(BaseSettings):
         return self
 
 settings = Settings()
+
