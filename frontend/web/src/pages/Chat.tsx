@@ -61,7 +61,12 @@ function renderMarkdown(content: string): ReactNode[] {
   return nodes;
 }
 
-const CHAT_API = "http://127.0.0.1:8000/api/v1/chat";
+const API_BASE =
+  window.location.hostname === "neelastack.vercel.app"
+    ? "https://neelastack.onrender.com"
+    : "http://127.0.0.1:8000";
+
+const CHAT_API = `${API_BASE}/api/v1/chat`;
 
 function getToken(): string {
   return localStorage.getItem("neelastack_token") || "";
