@@ -1,4 +1,5 @@
-﻿export type Project = {
+import { API_BASE_URL } from "./base";
+export type Project = {
   id: number;
   name: string;
   created_at?: string;
@@ -8,7 +9,7 @@ export type CreateProjectInput = {
   name: string;
 };
 
-const API = "http://127.0.0.1:8000";
+const API = API_BASE_URL;
 
 function authHeaders(): HeadersInit {
   const token = localStorage.getItem("neelastack_token");

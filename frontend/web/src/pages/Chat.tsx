@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../api/base";
 import { FormEvent, useState } from "react";
 import { ReactNode } from "react";
 import VoiceControls from "../components/VoiceControls";
@@ -64,7 +65,7 @@ function renderMarkdown(content: string): ReactNode[] {
 const API_BASE =
   window.location.hostname === "neelastack.vercel.app"
     ? "https://neelastack.onrender.com"
-    : "http://127.0.0.1:8000";
+    : API_BASE_URL;
 
 const CHAT_API = `${API_BASE}/api/v1/chat`;
 

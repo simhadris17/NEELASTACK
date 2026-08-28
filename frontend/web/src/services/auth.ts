@@ -1,15 +1,4 @@
-const deployedApiUrl = "https://neelastack.onrender.com";
-const localApiUrl = "http://127.0.0.1:8000";
-const configuredApiUrl = import.meta.env.VITE_API_URL as string | undefined;
-const isDeployedHost =
-  typeof window !== "undefined" &&
-  window.location.hostname === "neelastack.vercel.app";
-
-export const API_BASE_URL =
-  isDeployedHost &&
-  (!configuredApiUrl || configuredApiUrl.includes("127.0.0.1") || configuredApiUrl.includes("localhost"))
-    ? deployedApiUrl
-    : configuredApiUrl || localApiUrl;
+import { API_BASE_URL } from "../api/base";
 
 export const TOKEN_KEY = "neelastack_token";
 
@@ -37,6 +26,10 @@ export function clearToken(): void {
   localStorage.removeItem(TOKEN_KEY);
 }
 
+async function readJson(response: Response): Promise<any> {
+  return response.json().catch(() => ({}));
+}
+
 export async function register(
   email: string,
   password: string,
@@ -46,13 +39,10 @@ export async function register(
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      email,
-      password,
-    }),
+    body: JSON.stringify({ email, password }),
   });
 
-  const data = await response.json().catch(() => ({}));
+  const data = await readJson(response);
 
   if (!response.ok) {
     throw new Error(data.detail || "Registration failed");
@@ -66,7 +56,7 @@ export async function register(
 
   setToken(result.access_token);
 
-  return await getCurrentUser(result.access_token);
+  return getCurrentUser(result.access_token);
 }
 
 export async function login(
@@ -78,13 +68,10 @@ export async function login(
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      email,
-      password,
-    }),
+    body: JSON.stringify({ email, password }),
   });
 
-  const data = await response.json().catch(() => ({}));
+  const data = await readJson(response);
 
   if (!response.ok) {
     throw new Error(data.detail || "Login failed");
@@ -121,7 +108,7 @@ export async function getCurrentUser(
     },
   });
 
-  const data = await response.json().catch(() => ({}));
+  const data = await readJson(response);
 
   if (!response.ok) {
     clearToken();

@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "./base";
 const configuredApiUrl = import.meta.env.VITE_API_URL as string | undefined;
 const isDeployedHost =
   typeof window !== "undefined" &&
@@ -6,7 +7,7 @@ const API_BASE =
   isDeployedHost &&
   (!configuredApiUrl || configuredApiUrl.includes("127.0.0.1") || configuredApiUrl.includes("localhost"))
     ? "https://neelastack.onrender.com"
-    : configuredApiUrl || "http://127.0.0.1:8000";
+    : API_BASE_URL;
 
 export function getToken(): string {
   return localStorage.getItem("neelastack_token") || "";

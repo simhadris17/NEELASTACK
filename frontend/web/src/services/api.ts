@@ -1,4 +1,5 @@
-﻿import { API_BASE_URL, getToken } from "./auth";
+import { getToken } from "./auth";
+import { API_BASE_URL } from "../api/base";
 
 export async function apiGet<T>(path: string): Promise<T> {
   const token = getToken();
@@ -65,8 +66,3 @@ export function getConversations() {
   return apiGet<{ conversations: Conversation[] }>("/conversations")
     .then((data) => data.conversations);
 }
-
-
-
-
-

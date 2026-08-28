@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../api/base";
 import { FormEvent, ReactNode, useEffect, useState } from "react";
 import WorkspacePage from "../components/WorkspacePage";
 import { apiDelete, apiGet, apiPost } from "../api/workspace";
@@ -121,7 +122,7 @@ export default function Agents() {
     setResult(null);
     try {
       const token = localStorage.getItem("neelastack_token") || "";
-      const response = await fetch("http://127.0.0.1:8000/agents/run/stream", {
+      const response = await fetch(`${API_BASE_URL}/agents/run/stream`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -174,7 +175,7 @@ export default function Agents() {
     <WorkspacePage title="Agents" description="Create, manage and run AI agents inside the active project workspace." connected>
       <div className="workspace-grid">
         <section className="workspace-card create-card">
-          <div className="card-heading"><div><p className="card-kicker">NEW AGENT</p><h2>Create an agent</h2></div><div className="card-icon">◎</div></div>
+          <div className="card-heading"><div><p className="card-kicker">NEW AGENT</p><h2>Create an agent</h2></div><div className="card-icon">â—Ž</div></div>
           <p className="card-description">Add an AI agent to this workspace.</p>
           <form onSubmit={create} className="project-form">
             <label htmlFor="agent-name">Agent name</label>
@@ -216,7 +217,7 @@ export default function Agents() {
       <section className="workspace-card">
         <div className="card-heading"><div><p className="card-kicker">LIVE BACKEND</p><h2>Registered Agents</h2></div><button className="secondary-button" type="button" onClick={() => void load()} disabled={loading}>{loading ? "Refreshing..." : "Refresh"}</button></div>
         {error && <div className="error-banner" role="alert">{error}</div>}
-        {loading ? <div className="state-card"><p>Loading agents...</p></div> : agents.length === 0 ? <div className="state-card"><div className="empty-icon">◎</div><h3>No agents yet</h3><p>Create your first agent above.</p></div> : <div className="project-list">{agents.map((agent) => <article className="project-row" key={agent.id}><div className="project-mark">◎</div><div className="project-info"><h3>{agent.name}</h3><p>Agent #{agent.id} · Ready</p></div><button className="secondary-button" type="button" onClick={() => void remove(agent.id)}>Delete</button></article>)}</div>}
+        {loading ? <div className="state-card"><p>Loading agents...</p></div> : agents.length === 0 ? <div className="state-card"><div className="empty-icon">â—Ž</div><h3>No agents yet</h3><p>Create your first agent above.</p></div> : <div className="project-list">{agents.map((agent) => <article className="project-row" key={agent.id}><div className="project-mark">â—Ž</div><div className="project-info"><h3>{agent.name}</h3><p>Agent #{agent.id} Â· Ready</p></div><button className="secondary-button" type="button" onClick={() => void remove(agent.id)}>Delete</button></article>)}</div>}
       </section>
     </WorkspacePage>
   );

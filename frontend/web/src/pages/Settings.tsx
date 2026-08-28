@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../api/base";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import WorkspacePage from "../components/WorkspacePage";
@@ -13,7 +14,7 @@ export default function Settings() {
     setBusy(true);
     setError("");
     try {
-      const response = await fetch("http://127.0.0.1:8000/auth/account", {
+      const response = await fetch(`${API_BASE_URL}/auth/account`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${getToken() || ""}` },
       });
