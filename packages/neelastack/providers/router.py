@@ -13,7 +13,7 @@ PROVIDERS = {
 
 
 def get_provider():
-    name = (settings.model_provider or "openai").strip().lower()
+    name = (settings.model_provider or "ollama").strip().lower()
     provider_class = PROVIDERS.get(name)
 
     if provider_class is None:
@@ -23,7 +23,7 @@ def get_provider():
 
 
 def get_provider_with_fallback():
-    primary = (settings.model_provider or "openai").strip().lower()
+    primary = (settings.model_provider or "ollama").strip().lower()
 
     configured = [
         name.strip().lower()
